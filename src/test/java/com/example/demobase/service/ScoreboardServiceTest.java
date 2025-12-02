@@ -17,8 +17,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -109,7 +111,38 @@ class ScoreboardServiceTest {
 
     @Test
     void testGetScoreboardByPlayer_Success() {
-        // TODO: Implementar el test para testGetScoreboardByPlayer_Success
+        // GIVEN: Configuración de mocks
+        // 1. Simulamos que el repositorio encuentra al player1
+        when(playerRepository.findById(1L)).thenReturn(Optional.of(player1));
+
+        // 2. Simulamos que el repositorio de juegos devuelve las 3 partidas creadas en el setUp
+        // game1 (GANADO, 20pts), game2 (GANADO, 20pts), game3 (PERDIDO, 5pts)
+        when(gameRepository.findByJugador(player1)).thenReturn(List.of(game1, game2, game3));
+
+        // WHEN: Ejecutamos el servicio
+        ScoreboardDTO result = scoreboardService.getScoreboardByPlayer(1L);
+
+        // THEN: Verificaciones
+        assertNotNull(result);
+        assertEquals(player1.getId(), result.getIdJugador());
+        assertEquals(player1.getNombre(), result.getNombreJugador());
+
+        // Verificación de cálculos matemáticos:
+        // Puntaje total esperado: 20 + 20 + 5 = 45
+        assertEquals(45, result.getPuntajeTotal());
+        
+        // Total partidas: 3
+        assertEquals(3, result.getPartidasJugadas());
+        
+        // Partidas ganadas: 2 (game1 y game2)
+        assertEquals(2, result.getPartidasGanadas());
+        
+        // Partidas perdidas: 1 (game3)
+        assertEquals(1, result.getPartidasPerdidas());
+
+        // Verificamos que se llamaron a los repositorios
+        verify(playerRepository).findById(1L);
+        verify(gameRepository).findByJugador(player1);
         
     }
 

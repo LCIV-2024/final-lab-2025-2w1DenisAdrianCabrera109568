@@ -55,7 +55,42 @@ class GameServiceTest {
 
     @Test
     void testStartGame_Success() {
-        // TODO: Implementar el test para testStartGame_Success
+        // GIVEN: Configuración de los mocks
+        // 1. Encontramos al jugador
+        when(playerRepository.findById(1L)).thenReturn(Optional.of(player));
+        
+        // 2. Simulamos que NO existe una partida en curso (Optional.empty())
+        when(gameInProgressRepository.findByJugadorId(1L)).thenReturn(Optional.empty());
+        
+        // 3. Simulamos que encontramos una palabra disponible
+        when(wordRepository.findRandomWord()).thenReturn(Optional.of(word));
+        
+        // 4. Simulamos el guardado de la partida (devuelve el objeto que se le pasa)
+        when(gameInProgressRepository.save(any(GameInProgress.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // WHEN: Ejecutamos el método
+        GameResponseDTO response = gameService.startGame(1L);
+
+        // THEN: Verificaciones
+        assertNotNull(response);
+        
+        // Verificamos estado inicial según reglas del README (7 intentos)
+        assertEquals(7, response.getIntentosRestantes()); 
+        
+        // Verificamos que la palabra oculta tenga la misma longitud que "PROGRAMADOR" (11)
+        assertEquals(word.getPalabra().length(), response.getPalabraOculta().length());
+        
+        // Verificamos que la palabra oculta sean solo guiones bajos (ej: "___________")
+        assertTrue(response.getPalabraOculta().contains("_"));
+        assertFalse(response.getPalabraOculta().contains("P")); // No debe revelar letras aún
+                
+        // 1. Verificamos que la palabra se marcó como utilizada
+        assertTrue(word.getUtilizada()); 
+        verify(wordRepository).save(word);
+
+        // 2. Verificamos que se llamó al repositorio para guardar la nueva partida
+        verify(gameInProgressRepository).save(any(GameInProgress.class));
         
     }
 

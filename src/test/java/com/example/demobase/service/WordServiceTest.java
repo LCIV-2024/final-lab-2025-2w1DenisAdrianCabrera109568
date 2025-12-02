@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,13 +39,41 @@ class WordServiceTest {
 
     @Test
     void testGetAllWords() {
-        // TODO: Implementar el test para getAllWords
+        // GIVEN: El repositorio devuelve la lista de palabras configurada en el setUp
+        when(wordRepository.findAllOrdered()).thenReturn(List.of(word1, word2, word3));
+
+        // WHEN: Ejecutamos el servicio
+        List<WordDTO> result = wordService.getAllWords();
+
+        // THEN: Verificaciones
+        assertNotNull(result);
+        assertEquals(3, result.size()); // Deben ser 3 palabras
+        
+        // Verificamos el mapeo correcto del primer elemento
+        assertEquals(word1.getId(), result.get(0).getId());
+        assertEquals(word1.getPalabra(), result.get(0).getPalabra());
+        assertEquals(word1.getUtilizada(), result.get(0).getUtilizada());
+        
+        // Verificamos que se llamó al método específico del repositorio
+        verify(wordRepository).findAllOrdered();
         
     }
 
     @Test
     void testGetAllWords_EmptyList() {
-        // TODO: Implementar el test para getAllWords_EmptyList
+        // GIVEN: El repositorio devuelve una lista vacía
+        when(wordRepository.findAllOrdered()).thenReturn(Collections.emptyList());
+
+        // WHEN: Ejecutamos el servicio
+        List<WordDTO> result = wordService.getAllWords();
+
+        // THEN: Verificaciones
+        assertNotNull(result); // La lista no debe ser null
+        assertTrue(result.isEmpty()); // La lista debe estar vacía
+        assertEquals(0, result.size());
+        
+        // Verificamos la interacción
+        verify(wordRepository).findAllOrdered();
         
     }
 }

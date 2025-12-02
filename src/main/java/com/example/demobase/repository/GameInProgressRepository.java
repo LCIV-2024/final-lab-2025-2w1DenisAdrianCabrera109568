@@ -11,6 +11,10 @@ import java.util.Optional;
 @Repository
 public interface GameInProgressRepository extends JpaRepository<GameInProgress, Long> {
     
+    Optional<GameInProgress> findByJugadorId(Long playerId);
+    Optional<GameInProgress> findFirstByJugadorIdOrderByFechaInicioDesc(Long playerId);
+
+
     @Query("SELECT g FROM GameInProgress g WHERE g.jugador.id = :playerId AND g.palabra.id = :wordId")
     Optional<GameInProgress> findByJugadorAndPalabra(@Param("playerId") Long playerId, @Param("wordId") Long wordId);
     
